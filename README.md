@@ -13,11 +13,7 @@ A Computer Vision project for **automated shrimp counting** in aquaculture baske
 <table>
   <tr>
     <td><img src="YOLOv8/example/result/0002_result.jpg" width="320"/></td>
-    <td><img src="YOLOv8/example/result/0400_result.jpg" width="320"/></td>
-  </tr>
-  <tr>
-    <td><img src="YOLOv8/example/result/1_result.jpg" width="320"/></td>
-    <td><img src="YOLOv8/example/result/test_1_result.jpg" width="320"/></td>
+    <td><img src="YOLOv8/example/result/0_result.jpg" width="320"/></td>
   </tr>
 </table>
 
@@ -142,7 +138,7 @@ python "Generate Synthetic Dataset/src/augmentation/shrimp_augmented.py"
 python "Generate Synthetic Dataset/src/generate_synthetic_dataset.py"
 ```
 
-### 2. Train & Predict — YOLOv8
+### 2. Train & Predict — YOLOv8 (Recommended)
 ```bash
 # Train
 python YOLOv8/src/train_yolo.py
