@@ -1,0 +1,69 @@
+# ============================================
+# PYTHON
+# ============================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+*.egg
+
+# ============================================
+# DEEP LEARNING — Weights & Checkpoints
+# ============================================
+*.pt
+*.pth
+*.onnx
+*.weights
+
+# ============================================
+# TRAINING ARTIFACTS
+# ============================================
+runs/
+outputs/
+tb_logs/
+*.log
+*.cache
+*.csv
+
+# ============================================
+# DATASETS — Ảnh & Nhãn quá nặng
+# ============================================
+# YOLOv8
+YOLOv8/dataset/images/
+YOLOv8/dataset/labels/
+YOLOv8/dataset/visualized/
+YOLOv8/dataset/test/
+
+# APGCC
+APGCC/images/
+APGCC/labels/
+APGCC/data/
+APGCC/figures/
+
+# Generate Synthetic Dataset
+Generate Synthetic Dataset/images/foreground_augmented/
+Generate Synthetic Dataset/images/foreground_processed/
+Generate Synthetic Dataset/images/backgrounds_augmented/
+Generate Synthetic Dataset/images/backgrounds_check/
+Generate Synthetic Dataset/datasets/
+
+# ============================================
+# OS & IDE JUNK
+# ============================================
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# ============================================
+# GIỮ LẠI
+# ============================================
+# Ảnh minh hoạ kết quả
+!example/
+!example/result/
+
+# Ảnh gốc để tái tạo dataset
+!Generate Synthetic Dataset/images/backgrounds/
+!Generate Synthetic Dataset/images/foreground_raw/

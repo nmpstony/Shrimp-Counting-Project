@@ -1,0 +1,96 @@
+# =============================================================================
+# configs/SHRIMP_train.yml
+# =============================================================================
+# Config file cho bài toán đếm tôm thẻ sử dụng APGCC.
+# Dựa theo SHHA_train.yml gốc của tác giả, có chú thích tất cả thay đổi.
+#
+# Cách dùng:
+#   python main.py -c configs/SHRIMP_train.yml
+# =============================================================================
+
+# ---- Paths ----
+DATA_ROOT: "./data/shrimp"       # Thư mục gốc chứa dataset đã chuẩn bị
+TRAIN_LIST: "train.list"         # Tên file list train (relative to DATA_ROOT)
+VAL_LIST: "val.list"
+TEST_LIST: "test.list"
+
+OUTPUT_DIR: "./outputs/shrimp"   # Nơi lưu checkpoint, log
+
+# ---- Dataset ----
+DATASET: "shrimp"                # Tên dataset — phải match với registration
+NUM_WORKERS: 4
+CROP_SIZE: [512, 512]            # Kích thước crop khi training
+#   └─ Lý do: Ảnh tôm trong rổ thường ~1000-2000px, crop 512x512 cho phép
+#             model học các patch cục bộ, tránh OOM.
+
+# ---- Model Architecture ----
+MODEL:
+  BACKBONE: "vgg16_bn"           # VGG-16 + BatchNorm — theo thiết kế gốc
+  #   └─ Tác giả dùng VGG-16 vì cần feature map từ conv3 (stride 8)
+  #      và conv4 (stride 16) để tính IFI (Implicit Feature Interpolation).
+  #      KHÔNG dùng ResNet vì cần 2 feature map cụ thể này.
+  PRETRAINED: true               # Load ImageNet pretrained weights
+  STRIDE: 8                      # Stride của feature map đầu ra
+  NUM_CLASSES: 2                 # 2 classes: 0 = background, 1 = tôm thẻ
+
+# ---- APG Hyperparameters ---- (Auxiliary Point Guidance)
+APG:
+  N_POS: 8                       # Bán kính sinh Apos (pixel)
+  #   └─ Apos_i = GT_i + U(-8, 8). Với tôm cỡ ~20-30px, n_pos=8
+  #      đảm bảo Apos vẫn nằm trên thân tôm → confidence target=1
+  N_NEG: 24                      # Bán kính ngoài sinh Aneg (pixel)
+  #   └─ Aneg_j = GT_j + U(8, 24). Nằm ngoài tôm nhưng vẫn trong rổ.
+  #      Giá trị này phụ thuộc khoảng cách trung bình giữa các con tôm.
+  #      Tôm 30-50 con/ảnh → khoảng cách TB ~40-60px → n_neg=24 là an toàn.
+  K_POS: 3                       # Số Apos mỗi GT point
+  K_NEG: 3                       # Số Aneg mỗi GT point
+  LAMBDA3: 0.0002                # Weight cho loc loss trong L_APG_pos
+  LAMBDA4: 0.0002                # Weight cho offset loss trong L_APG_neg
+
+# ---- Training Hyperparameters ----
+TRAIN:
+  EPOCHS: 200
+  BATCH_SIZE: 4
+  #   └─ Với ảnh crop 512x512 và VGG16, batch=4 fit ~12GB VRAM.
+  #      Tăng lên 8 nếu dùng GPU 24GB+.
+
+  # Optimizer — AdamW với weight decay
+  OPTIMIZER: "AdamW"
+  #   └─ Dùng AdamW thay Adam vì bài toán fine-tune có regularization tốt hơn.
+  LR: 0.00001                    # Learning rate giảm mạnh 10 lần (từ 1e-4 -> 1e-5) để chống Loss Exploding
+  #   └─ Tác giả gốc dùng 1e-4 cho ShanghaiTech. Với dataset nhỏ hơn
+  #      (tôm ~100-500 ảnh) nên giữ 1e-4 hoặc giảm xuống 5e-5.
+  WEIGHT_DECAY: 0.0001
+  BACKBONE_LR_RATIO: 0.1        # LR cho backbone = LR_main * 0.1
+  #   └─ Trick quan trọng: backbone pretrained nên học chậm hơn head.
+  #      LR backbone = 0.1 * 1e-4 = 1e-5.
+
+  # Learning Rate Scheduler
+  LR_SCHEDULER: "StepLR"
+  LR_STEP: 60                    # Giảm LR mỗi 60 epochs
+  LR_GAMMA: 0.1                  # Hệ số giảm LR (×0.1 mỗi step)
+
+  # Loss weights (từ Equation 9 trong paper)
+  EOS_COEF: 0.02                 # Giảm mạnh (mặc định 0.5) để phạt Background bớt đi, ép Focus vào Tôm (Foreground)
+  LAMBDA1: 1.0                   # Trọng số loss_ce
+  LAMBDA2: 2.0                   # Trọng số loss_points
+  LAMBDA5: 0.5                   # Cân bằng L_APG trong L_overall
+
+  # Matching
+  TAU: 1.0                       # Cân bằng distance và confidence trong Hungarian
+  MAX_PROPOSALS: 1000            # Số proposals tối đa per image
+
+# ---- Validation & Logging ----
+VAL:
+  INTERVAL: 5                    # Validate mỗi 5 epochs
+  SAVE_BEST: true
+  METRIC: "MAE"                  # Metric để chọn best model
+
+LOG:
+  INTERVAL: 20                   # Print loss mỗi 20 iterations
+  TENSORBOARD: true
+
+# ---- Inference ----
+TEST:
+  THRESHOLD: 0.15                # Dựa trên phổ phân bố thực tế (Max ~0.27), mốc 0.15 là điểm rơi vàng để gom đủ số lượng tôm thật
+  WEIGHT: ""                     # Điền đường dẫn checkpoint khi test

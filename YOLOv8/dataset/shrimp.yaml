@@ -1,0 +1,11 @@
+# Đường dẫn tuyệt đối hoặc tương đối tới thư mục datasets/Segments
+path: .
+train: images/train
+val: images/val
+
+# Khai báo số lượng class (chỉ có 1 là con tôm)
+nc: 1
+
+# Tên của class
+names:
+  0: shrimp
