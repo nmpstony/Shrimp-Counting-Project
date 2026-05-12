@@ -85,7 +85,7 @@ def visualize_yolo_segmentation(image_path: str, label_path: str, output_path: s
 # ==========================================
 if __name__ == "__main__":
     # Thay đổi đường dẫn tới thư mục dataset của bạn
-    DATASET_DIR = "."#"datasets/Segments"
+    DATASET_DIR = "datasets/Segments"
     
     IMG_DIR = os.path.join(DATASET_DIR, "images")
     LBL_DIR = os.path.join(DATASET_DIR, "labels")
@@ -94,7 +94,7 @@ if __name__ == "__main__":
     os.makedirs(OUT_DIR, exist_ok=True)
 
     # Lấy danh sách 5 ảnh đầu tiên để test
-    img_files = sorted([f for f in os.listdir(IMG_DIR) if f.endswith(".jpg")])[:10]
+    img_files = sorted([f for f in os.listdir(IMG_DIR) if f.endswith(".jpg")])[400:401]
 
     for img_name in img_files:
         base_name = os.path.splitext(img_name)[0]
